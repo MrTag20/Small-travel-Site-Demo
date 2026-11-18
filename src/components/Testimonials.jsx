@@ -1,35 +1,90 @@
-import { useState, useEffect } from 'react';
-import { Star, ChevronLeft, ChevronRight, Quote, Sparkles, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Star, ChevronLeft, ChevronRight, Sparkles, CheckCircle2 } from 'lucide-react';
 import { siteConfig } from '../data/siteConfig';
 
 export default function Testimonials() {
   const { testimonialsSection } = siteConfig;
   const testimonials = testimonialsSection.testimonials;
 
-  // Track index for the 4-at-a-time slider
-  const [startIndex, setStartIndex] = useState(0);
-  const maxIndex = Math.max(0, testimonials.length - 4);
+  // Responsive cards count based on viewport width
+  // Desktop: 4 cards at a time | Tablet: 2 cards | Mobile: 1 card
+  const [cardsPerView, setCardsPerView] = useState(4);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width < 640) {
+        setCardsPerView(1);
+      } else if (width < 1024) {
+        setCardsPerView(2);
+      } else {
+        setCardsPerView(4);
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const maxIndex = Math.max(0, testimonials.length - cardsPerView);
+
+  // Keep currentIndex bounded when screen size or cardsPerView changes
+  useEffect(() => {
+    if (currentIndex > maxIndex) {
+      setCurrentIndex(0);
+    }
+  }, [cardsPerView, maxIndex, currentIndex]);
 
   const handleNext = () => {
-    setStartIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
+    setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
   };
 
   const handlePrev = () => {
-    setStartIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
+    setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
   };
 
-  // Auto-play
+  // Auto-play timer (pauses when user hovers or interacts)
   useEffect(() => {
+    if (isPaused || maxIndex === 0) return;
     const timer = setInterval(() => {
-      setStartIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
-    }, 6000);
+      setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
+    }, 5500);
     return () => clearInterval(timer);
-  }, [maxIndex]);
+  }, [maxIndex, isPaused]);
+
+  // Touch swipe support for smooth mobile swiping
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const distance = touchStartX.current - touchEndX.current;
+    if (distance > 45) {
+      handleNext();
+    } else if (distance < -45) {
+      handlePrev();
+    }
+  };
+
+  // Percentage translation per slide step
+  const stepPercentage = 100 / cardsPerView;
+  const translateX = currentIndex * stepPercentage;
 
   return (
     <section className="py-12 sm:py-16 bg-[#F5F8FC] relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* ── Section Header with Reduced Gap ── */}
+        {/* ── Section Header ── */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10 gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#EAF6FF] text-[#087FCB] text-xs font-semibold tracking-wider uppercase mb-2">
@@ -49,32 +104,40 @@ export default function Testimonials() {
             <button
               onClick={handlePrev}
               className="w-10 h-10 rounded-full bg-white border border-slate-200 hover:border-[#087FCB] hover:bg-[#087FCB] hover:text-white text-slate-700 flex items-center justify-center transition-all shadow-xs active:scale-95"
-              aria-label="Previous testimonials"
+              aria-label="Previous testimonial"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={handleNext}
               className="w-10 h-10 rounded-full bg-white border border-slate-200 hover:border-[#087FCB] hover:bg-[#087FCB] hover:text-white text-slate-700 flex items-center justify-center transition-all shadow-xs active:scale-95"
-              aria-label="Next testimonials"
+              aria-label="Next testimonial"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* ── 4-at-a-time Slider Carousel ── */}
-        <div className="overflow-hidden">
+        {/* ── Responsive Slider Carousel ── */}
+        <div
+          className="overflow-hidden select-none"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <div
-            className="flex transition-transform duration-500 ease-out -mx-2.5"
+            className="flex transition-transform duration-500 ease-out"
             style={{
-              transform: `translateX(-${startIndex * 25}%)`,
+              transform: `translateX(-${translateX}%)`,
             }}
           >
             {testimonials.map((item) => (
               <div
                 key={item.id}
-                className="w-full sm:w-1/2 lg:w-1/4 shrink-0 px-2.5 flex"
+                className="shrink-0 px-2 sm:px-2.5 flex"
+                style={{ width: `${stepPercentage}%` }}
               >
                 <div className="w-full bg-white rounded-2xl p-5 border border-slate-100 hover:border-[#087FCB]/30 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between">
                   <div>
@@ -103,6 +166,7 @@ export default function Testimonials() {
                         src={item.photo}
                         alt={item.name}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                     </div>
                     <div className="truncate">
@@ -125,11 +189,11 @@ export default function Testimonials() {
           {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
             <button
               key={idx}
-              onClick={() => setStartIndex(idx)}
+              onClick={() => setCurrentIndex(idx)}
               className={`h-1.5 transition-all duration-300 rounded-full ${
-                startIndex === idx ? 'w-6 bg-[#087FCB]' : 'w-1.5 bg-slate-300 hover:bg-slate-400'
+                currentIndex === idx ? 'w-6 bg-[#087FCB]' : 'w-1.5 bg-slate-300 hover:bg-slate-400'
               }`}
-              aria-label={`Go to slide group ${idx + 1}`}
+              aria-label={`Go to slide ${idx + 1}`}
             />
           ))}
         </div>

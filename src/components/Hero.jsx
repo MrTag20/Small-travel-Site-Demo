@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, ArrowRight, Bot, Star, ShieldCheck, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sparkles, ArrowRight, Bot } from 'lucide-react';
 import { siteConfig } from '../data/siteConfig';
 
 export default function Hero({ onOpenAiChat }) {
@@ -91,22 +91,6 @@ export default function Hero({ onOpenAiChat }) {
                 <Bot className="w-5 h-5 text-[#1599ED]" />
                 <span>{hero.secondaryCta.text}</span>
               </button>
-            </div>
-
-            {/* Micro Trust Badges */}
-            <div className="mt-8 pt-5 border-t border-white/15 flex flex-wrap items-center justify-center sm:justify-start gap-5 sm:gap-8 text-xs sm:text-sm text-white/95 font-medium drop-shadow-sm">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#1599ED]" />
-                <span>100% Curated Itineraries</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                <span>4.8/5 Star Rating</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#1599ED]" />
-                <span>50+ Destinations</span>
-              </div>
             </div>
 
             {/* Slide Pagination Dots & Controls */}
