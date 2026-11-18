@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #087FCB;
+  --color-electric: #1599ED;
+  --color-navy: #062B50;
+  --color-ice: #EAF6FF;
+  --color-light-grey: #F5F8FC;
+  --color-brand-text: #172B45;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-sans);
+    color: var(--color-brand-text);
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-heading {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #F5F8FC;
+}
+::-webkit-scrollbar-thumb {
+  background: #087FCB;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #062B50;
+}
+
+/* Utility classes for card shadows */
+.travel-card-shadow {
+  box-shadow: 0 10px 30px -10px rgba(6, 43, 80, 0.08);
+}
+.travel-card-shadow-hover:hover {
+  box-shadow: 0 20px 40px -15px rgba(8, 127, 203, 0.16);
+}
